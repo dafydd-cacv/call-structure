@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advice Call Trainer - Call Flow Practice</title>
+    <!-- Load Open Sans from Google Fonts - Corrected WGT parameter -->
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom CSS to enforce Open Sans and brand colors */
+        :root {
+            --primary-blue: #004B88;
+            --accent-yellow: #FCBB69;
+            --light-bg: #F8FF8; 
+            --text-dark: #004B88; 
+            --green-correct: #4CAF50;
+            --red-incorrect: #F44336;
+            --light-blue-tint: #EAEDF5;
+        }
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background-color: var(--light-blue-tint); /* Used light tint for page background */
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header styling */
+        .game-header {
+            background-color: var(--primary-blue);
+            color: white;
+            padding: 0.75rem 2rem; 
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-title-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center; 
+            gap: 1.5rem; 
+        }
+        
+        /* Text container to group H1 and P */
+        .header-text-container {
+            flex-grow: 1; 
+        }
+
+        .game-header h1 {
+            font-family: 'Open Sans', sans-serif;
+            font-weight: 700; 
+            font-size: 1.875rem; 
+            text-align: left;
+        }
+        
+        .game-header p {
+            font-weight: 400; 
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-top: 0.25rem;
+        }
+
+        .phone-icon {
+            font-size: 5rem; 
+            flex-shrink: 0; 
+        }
+        
+        .footer-logo {
+            width: 150px;
+            height: auto;
+        }
+
+        /* Main Content Area Styling */
+        .content-area {
+            padding: 2.5rem;
+        }
+
+        /* Modal specific styling (for user setup) */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background-color: white;
+            border: 4px solid var(--primary-blue);
+            padding: 2rem;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            max-width: 450px;
+            width: 90%;
+        }
+
+        .avatar-display-large {
+            font-size: 6rem; 
+            padding: 0.5rem 1rem;
+        }
+        
+        .avatar-nav-btn {
+            font-size: 2rem;
+            cursor: pointer;
+            color: var(--primary-blue);
+            padding: 0 0.5rem;
+            user-select: none;
+            transition: color 0.1s;
+        }
+        .avatar-nav-btn:hover {
+            color: var(--accent-yellow);
+        }
+
+        .input-group input {
+            border: 2px solid var(--primary-blue);
+            padding: 0.75rem;
+            font-weight: 600;
+            width: 100%;
+        }
+
+        /* Button Styling for Navigation */
+        .nav-button {
+            padding: 0.75rem 1.5rem;
+            font-weight: 700;
+            color: white;
+            background-color: var(--primary-blue);
+            transition: background-color 0.1s;
+        }
+        .nav-button:hover:not(:disabled) {
+            background-color: #2E639A; /* Darker blue tint on hover */
+        }
+        .nav-button:disabled {
+            background-color: var(--light-blue-tint);
+            color: #96A7CB;
+            cursor: not-allowed;
+        }
+        
+        /* Start Again Button Styling */
+        .start-again-button {
+            padding: 0.75rem 1.5rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+            background-color: var(--light-blue-tint); /* Use light blue tint */
+            transition: background-color 0.1s;
+        }
+        .start-again-button:hover {
+            background-color: #C9D1E5; /* Slightly darker tint on hover */
+        }
+
+        /* Specific content component styling */
+        .stage-title {
+            color: var(--accent-yellow);
+            background-color: var(--primary-blue);
+            padding: 0.5rem 1rem;
+            font-weight: 700;
+        }
+
+        /* Speech Bubble Styling */
+        .script-container-wrapper {
+            display: flex;
+            align-items: flex-start; /* Aligns avatar to the top */
+            gap: 0.75rem;
+            padding: 1.5rem 0; /* Vertical padding applied here */
+        }
+        
+        .script-emoji {
+            font-size: 2.25rem; 
+            line-height: 1; 
+            flex-shrink: 0; 
+            padding-top: 0.1rem; 
+        }
+
+        .speech-bubble {
+            position: relative;
+            background: white;
+            border: 2px solid var(--primary-blue);
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            flex-grow: 1;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Speech Bubble Arrow/Tail */
+        .speech-bubble:before {
+            content: "";
+            position: absolute;
+            top: 1rem;
+            left: -12px; /* Position next to the avatar */
+            width: 0;
+            height: 0;
+            border-top: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+            border-right: 12px solid var(--primary-blue);
+            z-index: 10;
+        }
+        
+        .speech-bubble:after {
+            content: "";
+            position: absolute;
+            top: 1rem;
+            left: -8px; 
+            width: 0;
+            height: 0;
+            border-top: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+            border-right: 12px solid white;
+            z-index: 11;
+        }
+        
+        /* Styles for Tips/Objections Boxes */
+        .info-box {
+            border: 2px solid var(--primary-blue);
+            background-color: var(--light-blue-tint);
+            padding: 1.5rem;
+            min-height: 100%; /* Ensures stretching in the flex container */
+        }
+        .info-box h3 {
+            font-weight: 700;
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+        }
+        .info-icon {
+            margin-right: 0.5rem;
+            font-size: 1.5rem;
+        }
+        
+        /* Specific style for inactive Objections box */
+        /* Reusing this class for both Tips and Objections when content is empty */
+        .objections-inactive {
+            border-color: #C9D1E5; /* Light blue tint border */
+            color: #96A7CB; /* Medium blue tint for grayed out text */
+        }
+        .objections-inactive h3, .objections-inactive .info-icon {
+            color: #96A7CB !important;
+        }
+        /* Note: p tag styling is now handled by the JS logic rendering an empty string */
+
+        /* Choice Button Styling */
+        .choice-button {
+            padding: 0.75rem 1.5rem;
+            font-weight: 700;
+            color: white;
+            background-color: var(--primary-blue);
+            transition: background-color 0.1s;
+        }
+        .choice-button:hover {
+            background-color: #2E639A;
+        }
+        
+        /* Full-screen Image Modal Styles */
+        #image-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        #image-modal-content {
+            max-width: 90%;
+            max-height: 90%;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            cursor: pointer;
+        }
+        #image-modal-content img {
+            width: auto;
+            max-width: 100%;
+            height: auto;
+            max-height: 100vh; /* Use 100vh to ensure it fits screen height */
+        }
+        
+        /* New styles for the Action Instruction */
+        .action-instruction {
+            margin-top: 1rem;
+            padding: 0.75rem 1rem;
+            background-color: white;
+            /* REMOVED BORDER: To match script box and remove blue line */
+            font-weight: 600;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .action-instruction-icon {
+            font-size: 1.5rem; /* Slightly smaller than script emoji (2.25rem) */
+            line-height: 1;
+            flex-shrink: 0;
+        }
+
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <!-- USER NAME AND AVATAR MODAL (Appears on Load) -->
+    <div id="user-setup-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2 class="text-2xl font-bold text-primary-blue mb-6 text-center">Hello! Who are you?</h2>
+            
+            <div class="flex flex-col space-y-6 mb-6"> 
+                <div class="flex flex-col items-center w-full justify-center">
+                    <div class="flex items-center">
+                        <span class="avatar-nav-btn" onclick="cycleAvatar(-1)">◀</span>
+                        <div id="avatar-display" class="avatar-display-large"></div> <!-- Avatar content set by JS -->
+                        <span class="avatar-nav-btn" onclick="cycleAvatar(1)">▶</span>
+                    </div>
+                </div>
+                
+                <div class="input-group w-full flex flex-col justify-center">
+                    <input 
+                        type="text" 
+                        id="user-name-input" 
+                        placeholder="Your name" 
+                        value=""
+                    >
+                </div>
+            </div>
+
+            <button 
+                id="start-training-button"
+                onclick="saveUserDetails()"
+                class="w-full py-3 text-white font-bold transition duration-200"
+                style="background-color: var(--primary-blue);"
+            >
+                Start
+            </button>
+        </div>
+    </div>
+    
+    <!-- FULL-SCREEN IMAGE MODAL -->
+    <div id="image-modal" class="modal-overlay" onclick="closeImageModal()">
+        <div id="image-modal-content">
+            <img id="modal-image" src="" alt="Zoomed screenshot" class="w-full">
+        </div>
+    </div>
+
+    <main id="main-content" class="flex-grow max-w-5xl mx-auto w-full hidden"> 
+        
+        <!-- Branded Header Box -->
+        <div class="game-header mb-8">
+            <div class="header-title-row">
+                <div class="header-text-container">
+                    <h1 class="game-title">Call structure</h1>
+                    <p class="text-sm font-normal opacity-90">Best practice for structuring your calls.</p>
+                </div>
+                <span id="header-icon" class="phone-icon" role="img" aria-label="Advisor avatar"></span>
+            </div>
+        </div>
+
+        <!-- CALL STAGE CONTENT AREA -->
+        <div class="bg-white shadow-md border-t-4 border-b-4 border-primary-blue content-area">
+            
+            <div id="stage-container">
+                <!-- Content will be rendered here by JavaScript -->
+                <h2 class="text-xl font-bold text-primary-blue mb-4">Loading...</h2>
+            </div>
+            
+            <!-- Fixed Navigation Buttons (Hidden when options are present) -->
+            <div id="fixed-nav" class="flex justify-between mt-8">
+                <div class="flex gap-4">
+                    <button id="start-again-btn" onclick="renderStage(0)" class="start-again-button">
+                        <span role="img" aria-label="Restart icon">↺</span> Start again
+                    </button>
+                    <button id="prev-btn" onclick="goPrev()" class="nav-button" disabled>
+                        Previous
+                    </button>
+                </div>
+                <button id="next-btn" onclick="goNext()" class="nav-button">
+                    Next
+                </button>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Footer Section with Branding -->
+    <footer class="mt-12 pt-4 border-t border-gray-300 flex flex-col md:flex-row items-center justify-between text-sm text-gray-600 max-w-5xl mx-auto w-full">
+        <div class="mb-4 md:mb-0">
+            <img src="https://cacv.org.uk/wp-content/uploads/cacv-logo.svg" alt="Citizens Advice Cardiff & Vale Logo" class="footer-logo">
+        </div>
+        <p class="text-center md:text-right font-semibold">
+            This tool was designed by 
+            <a href="mailto:dafydd.young@consumer.advice.org.uk" class="text-blue-700 hover:text-blue-900 transition font-extrabold">Dafydd</a>
+            at 
+            <a href="https://cacv.org.uk" target="_blank" class="text-primary-blue hover:underline transition" style="color: var(--primary-blue);">Citizens Advice Cardiff & Vale</a>.
+        </p>
+    </footer>
+
+    <script>
+        // --- GLOBAL STATE ---
+        let advisorName = "Advisor"; 
+        let currentStageIndex = 0;
+        let selectedAvatar = '👩🏻‍💻'; // Stored globally after selection
+        
+        const avatars = ['👩🏻‍💻', '👨🏻‍💻', '👨🏽‍💻', '👩🏽‍💻', '👨🏿‍💻', '👩🏿‍💻'];
+        let currentAvatarIndex = 0; 
+        
+        // --- DOM REFERENCES ---
+        const modal = document.getElementById('user-setup-modal');
+        const mainContent = document.getElementById('main-content');
+        const avatarDisplay = document.getElementById('avatar-display');
+        const nameInput = document.getElementById('user-name-input');
+        const headerIcon = document.getElementById('header-icon'); 
+        const stageContainer = document.getElementById('stage-container');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const fixedNav = document.getElementById('fixed-nav');
+        const imageModal = document.getElementById('image-modal');
+        const modalImage = document.getElementById('modal-image');
+
+
+        // --- CALL FLOW DATA ---
+        const commonAddressObjection = {
+            query: "Why do you need to know where I live?",
+            response: "We log cases on behalf of, and pass information to, Trading Standards services across the country. Each different local authority has different protocols, so knowing where you live is essential to make sure that we offer the right advice, and, where applicable, the right support from Trading Standards."
+        };
+
+        const callFlowData = [
+            {
+                id: 'intro',
+                title: "Introduce yourself and the service",
+                advisorScript: (name, greeting) => 
+                    `${greeting}, you're speaking to ${name} at the Citizens Advice consumer service.<br>`,
+                tips: "Make a good first impression. Enunciate your name, the name of the service, and sound engaged and ready to help.",
+                objections: "None", 
+                type: 'sequential',
+                visualAid: '',
+                clickAction: null 
+            },
+            {
+                id: 'check-repeat',
+                title: "Check if it's a repeat call.",
+                advisorScript: () => "Is this the first time that you've called us about your query?<br>",
+                tips: "Hopefully, a repeat caller with have their reference number with them.", 
+                objections: "None", 
+                type: 'choice',
+                options: [
+                    { label: "Repeat caller", targetIndex: 2 },
+                    { label: "New caller", targetIndex: 2 }
+                ]
+            },
+            {
+                id: 'check-scope',
+                title: "Check that the call is within scope.",
+                advisorScript: () => "Are you calling us about goods you've purchased or a service that you've paid for?<br>",
+                tips: 'Finding out early in a call whether we can advise the client helps to avoid taking lots of information unnecesarilly and improves the client journey. If they\'re calling about something out of scope, check the <a href="https://docs.google.com/spreadsheets/d/1Ghs2JKcALm6wzgV0UvMi1zRY38pYIdVcM8Qb6sPUGtU/edit?gid=2113296188#gid=2113296188" target="_blank" class="font-bold underline" style="color: var(--text-dark);">signposting list</a>',
+                objections: "None", 
+                type: 'sequential',
+                visualAid: '',
+                clickAction: null
+            },
+            {
+                id: 'set-expectations',
+                title: "Set expectations and boundaries.",
+                advisorScript: () => "What I'm going to do first is take some basic information about you.<br>Then I'll ask a few questions about the reason for the call.<br>Once I've got enough information to be able to advise you, I'll let you know what your rights are, what options you have, and how you can try and get what you're entitled to.<br>I might have to interrupt you at points to make sure that I've got the information that I need, and if you need me to repeat anything or explain something in further detail just ask me.<br>",
+                tips: "Letting the client know at the start of the call that you're going to interrupt them when you need to should let you assert yourself and control the call better later on. It also establishes that you're in charge, but by letting them know that you're happy to repeat and clarify advice still gives the client some element of control.",
+                objections: "None", 
+                type: 'sequential',
+                visualAid: '',
+                clickAction: null
+            },
+            {
+                id: 'client-name',
+                title: "Take the key bits of client information: Name",
+                advisorScript: () => "Firstly, what's your name?",
+                tips: "Remember to ask the caller to spell their name if there are any doubts!",
+                objections: {
+                    query: "Why do you need to know my name?",
+                    response: "We set up a case file to log your complaint. You can do this anonymously if you'd prefer to, but it means that if you need to call back for further advice we won't have your case notes."
+                },
+                type: 'sequential',
+                visualAid: 'clientdetails.png', // Screenshot for name/details
+                clickAction: null
+            },
+            // --- STAGE 6: Postcode ---
+            {
+                id: 'client-postcode',
+                title: "Secondly, what's your postcode?",
+                advisorScript: () => "Secondly, what's your postcode?",
+                tips: 'Enter the postcode in Casebook and click "Find address". This will bring up a list of all of the addresses at that postcode.',
+                objections: commonAddressObjection, 
+                type: 'sequential',
+                visualAid: 'clientdetails2.png', // Screenshot for postcode lookup
+                clickAction: "Click 'Find address' after entering the postcode into Casebook."
+            },
+            // --- STAGE 7: Street Confirmation ---
+            {
+                id: 'client-street',
+                title: "Is that [street name]?",
+                advisorScript: () => "Is that [street name]?",
+                tips: "Double check the street name with the caller.",
+                objections: commonAddressObjection, 
+                type: 'sequential',
+                visualAid: 'clientdetails2.png',
+                clickAction: null
+            },
+            // --- STAGE 8: House Number/Name ---
+            {
+                id: 'client-house',
+                title: "What house number or name?",
+                advisorScript: () => "What house number or name?",
+                tips: "Ask the caller to give you their house number or name.",
+                objections: commonAddressObjection, 
+                type: 'sequential',
+                visualAid: 'clientdetails2.png',
+                clickAction: null
+            },
+            // --- STAGE 9: Phone Number ---
+            {
+                id: 'client-phone',
+                title: "Confirm phone number",
+                advisorScript: () => 
+                    `Is the telephone number you're calling from today that ends [last three digits] the best one for us to note down, or would you prefer that we take another?<br>`,
+                tips: "Remember to ask the caller to confirm their phone number if there are any doubts! Never take the telephone number from Connect and save it to Casebook without checking with the client that it's the right one.",
+                objections: {
+                    query: "Why do you want my phone number?",
+                    response: "Where Trading Standards get in touch with consumers, they often do so by phone."
+                },
+                type: 'sequential',
+                visualAid: ['clientdetails3.png', 'connect_placeholder.png'],
+                clickAction: null
+            },
+             // --- STAGE 10: Email Address ---
+            {
+                id: 'client-email',
+                title: "Email Address",
+                advisorScript: () => "What's your email address?",
+                tips: "Remember to ask the caller to confirm the spelling of their email address if there are any doubts!",
+                objections: {
+                    query: "Why do you want my email address?",
+                    response: "Where Trading Standards get in touch with consumers, they usually prefer to do so by email."
+                },
+                type: 'sequential',
+                visualAid: 'clientdetails5.png',
+                clickAction: null
+            },
+            // --- STAGE 11: Business Status ---
+            {
+                id: 'client-status',
+                title: "Business Status",
+                advisorScript: () => "Are you calling as a private individual or on behalf of a business?",
+                tips: "Remember, a consumer is an individual acting for purposes that are wholly or mainly outside the individual’s trade, business, craft or profession.",
+                objections: "None",
+                type: 'sequential',
+                visualAid: 'clientdetails7.png',
+                clickAction: "Click on 'Use client postcode' to map their profile to their local Trading Standards service. If there's a relevant third party to the case, you can (with their permission) enter their details here. You should also ask the caller how they found out number and update that section on Casebook."
+            },
+            // --- STAGE 12: Trader Name ---
+            {
+                id: 'trader-name',
+                title: "Trader Name",
+                advisorScript: () => "What's the name of the company your issue is with?",
+                tips: "Ensuring that we accurately take a trader's details is vital for our information gathering purposes - if Trading Standards don't know who clients are complaining about, how are they supposed to do anything?",
+                objections: "None",
+                type: 'sequential',
+                visualAid: 'traderdetails.png',
+                clickAction: "Search for an existing trader record in Casebook. If you can't find one, click 'Add a new trader' and add the details."
+            }
+        ];
+        
+        // --- HELPER FUNCTIONS ---
+
+        function getTimeOfDayGreeting() {
+            const hour = new Date().getHours();
+            if (hour < 12) {
+                return "Good morning";
+            } else {
+                return "Good afternoon";
+            }
+        }
+        
+        // --- IMAGE MODAL FUNCTIONS ---
+
+        function openImageModal(imageSrc) {
+            modalImage.src = imageSrc;
+            imageModal.style.display = 'flex';
+        }
+
+        function closeImageModal() {
+            imageModal.style.display = 'none';
+            modalImage.src = '';
+        }
+
+        // --- STAGE RENDERING ---
+
+        function renderStage(index, navigateType = 'sequential') {
+            if (index < 0 || index >= callFlowData.length) {
+                // Handle end of flow or error
+                stageContainer.innerHTML = '<h2 class="text-xl font-bold text-primary-blue">Training Complete!</h2>';
+                fixedNav.classList.add('hidden');
+                return;
+            }
+
+            // If navigating to stage 0 from the start again button, reset index explicitly.
+            currentStageIndex = (index === 0) ? 0 : index; 
+            
+            const stage = callFlowData[currentStageIndex];
+            const greeting = getTimeOfDayGreeting();
+            const stageNumber = currentStageIndex + 1;
+
+            // --- TIPS/OBJECTIONS LOGIC ---
+            const tipContent = stage.tips.trim();
+            const objectionsData = stage.objections; 
+            
+            const isTipsInactive = tipContent === "";
+            const isObjectionsInactive = objectionsData === "None"; 
+
+            // Apply classes for grayed-out styling
+            const tipsClass = isTipsInactive ? 'objections-inactive' : '';
+            const objectionsClass = isObjectionsInactive ? 'objections-inactive' : '';
+
+            // Generate Tips Content
+            const tipsHTML = isTipsInactive 
+                ? '' 
+                : `<p class="text-sm">${tipContent}</p>`;
+            
+            // Generate Objections Content
+            let objectionsHTML = '';
+            if (!isObjectionsInactive) {
+                if (typeof objectionsData === 'string') {
+                    // Simple text objection (shouldn't happen with the new structure but good guard)
+                    objectionsHTML = `<p class="text-sm">${objectionsData}</p>`;
+                } else {
+                    // Detailed objection with query and response
+                    objectionsHTML = `
+                        <p class="font-semibold text-sm mb-1">Client Query:</p>
+                        <p class="italic text-sm mb-3">"${objectionsData.query}"</p>
+                        <p class="font-semibold text-sm mb-1">Response:</p>
+                        <p class="text-sm">${objectionsData.response}</p>
+                    `;
+                }
+            }
+            // --- END TIPS/OBJECTIONS LOGIC ---
+            
+            // --- VISUAL AID LOGIC & LAYOUT SPLIT ---
+            let visualAidHTML = '';
+            let scriptColClass = 'w-full'; // Default to full width
+            
+            if (stage.visualAid) {
+                scriptColClass = 'w-3/4'; // 3/4 width for script
+                
+                // Handle single image (string) or multiple images (array)
+                const visualAids = Array.isArray(stage.visualAid) ? stage.visualAid : [stage.visualAid];
+                
+                const imagesHTML = visualAids.map((imageSrc, index) => {
+                    const altText = imageSrc.includes('connect') ? "Connect screenshot" : "Casebook screenshot";
+                    return `
+                        <!-- Screenshot thumbnail (Clickable) -->
+                        <div class="mb-3">
+                            <h4 class="text-xs font-semibold mb-1 hidden text-center" style="color: var(--primary-blue);">
+                                ${altText}
+                            </h4>
+                            <img 
+                                src="${imageSrc}" 
+                                alt="${altText} for ${stage.title}" 
+                                class="w-full h-auto max-w-full border border-gray-400 cursor-pointer transition-opacity duration-200 hover:opacity-80"
+                                onclick="openImageModal('${imageSrc}')"
+                                onerror="this.onerror=null; this.alt='[Image Missing: ${imageSrc}]'; this.style.opacity='0.5'; this.style.height='150px'; this.style.objectFit='contain'; this.style.border='2px dashed #96A7CB';"
+                            >
+                        </div>
+                    `;
+                }).join('');
+
+                visualAidHTML = `
+                    <div class="w-1/4 flex flex-col items-center p-3 border-l-2 border-l-primary-blue bg-gray-50 overflow-y-auto">
+                        <h3 class="text-base font-semibold mb-2 text-center" style="color: var(--primary-blue);">
+                            Casebook screenshot
+                            ${visualAids.length > 1 ? 's' : ''}
+                        </h3>
+                        ${imagesHTML}
+                        <p class="text-xs text-gray-500 mt-2">Click to zoom</p>
+                    </div>
+                `;
+            }
+
+            // --- CLICK ACTION INSTRUCTION LOGIC ---
+            let clickActionHTML = '';
+            if (stage.clickAction) {
+                clickActionHTML = `
+                    <div class="action-instruction">
+                        <span class="action-instruction-icon">🖱️</span>
+                        <span class="text-sm">${stage.clickAction}</span>
+                    </div>
+                `;
+            }
+
+            // 1. Generate the main content HTML
+            let contentHTML = `
+                <div class="stage-title text-xl mb-4">${stageNumber}. ${stage.title}</div>
+                
+                <div class="flex mb-6">
+                    <!-- Advisor Script Box (3/4 or Full Width) -->
+                    <div class="${scriptColClass} bg-white p-6 border-2 border-primary-blue ${stage.visualAid ? 'border-r-0' : ''}"> 
+                        <div class="script-container-wrapper">
+                            <!-- USE THE SELECTED AVATAR HERE -->
+                            <span class="script-emoji" role="img" aria-label="Advisor speaking">${selectedAvatar}</span>
+                            
+                            <!-- Speech Bubble -->
+                            <div class="speech-bubble">
+                                <p class="text-lg font-semibold" style="color: var(--text-dark);">
+                                    ${typeof stage.advisorScript === 'function' ? stage.advisorScript(advisorName, greeting) : stage.advisorScript}
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <!-- Action Instruction -->
+                        ${clickActionHTML}
+
+                    </div>
+                    
+                    <!-- Visual Aid (1/4 Width, only if present) -->
+                    ${visualAidHTML}
+                </div>
+                
+                <!-- Tips and Objections Placeholders -->
+                <div class="flex flex-col md:flex-row gap-6">
+                    <!-- Tips Column -->
+                    <div class="w-full md:w-1/2">
+                        <div class="info-box ${tipsClass}">
+                            <h3><span class="info-icon">💡</span> Tips</h3>
+                            ${tipsHTML}
+                        </div>
+                    </div>
+                    
+                    <!-- Objections Column -->
+                    <div class="w-full md:w-1/2">
+                        <div class="info-box ${objectionsClass}">
+                            <h3><span class="info-icon">⚠️</span> Objections</h3>
+                            ${objectionsHTML}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // 2. Check for dynamic options (choice stage)
+            if (stage.options && stage.options.length > 0 && stage.type === 'choice') {
+                // Hide fixed navigation for choice stages
+                fixedNav.classList.add('hidden');
+                
+                // Combine Start Again/Previous and Choice Buttons into one row
+                contentHTML += `
+                    <div class="flex justify-between mt-8"> 
+                        <!-- Left Group: Start Again & Previous -->
+                        <div class="flex gap-4">
+                            <button onclick="renderStage(0)" class="start-again-button">
+                                <span role="img" aria-label="Restart icon">↺</span> Start again
+                            </button>
+                            <button onclick="goPrev()" class="nav-button ${currentStageIndex === 0 ? 'disabled' : ''}" ${currentStageIndex === 0 ? 'disabled' : ''}>
+                                Previous
+                            </button>
+                        </div>
+                        
+                        <!-- Right Group: Choice Buttons -->
+                        <div class="flex gap-4">
+                            ${stage.options.map(option => `
+                                <button onclick="handleChoice(${option.targetIndex})" class="choice-button">
+                                    ${option.label}
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+
+            } else {
+                // 3. Restore fixed navigation for sequential stages
+                fixedNav.classList.remove('hidden');
+                prevBtn.disabled = currentStageIndex === 0;
+                nextBtn.disabled = currentStageIndex === callFlowData.length - 1; 
+            }
+            
+            // 4. Update the container
+            stageContainer.innerHTML = contentHTML;
+        }
+
+        // --- NAVIGATION ---
+
+        function goNext() {
+            if (currentStageIndex < callFlowData.length - 1) {
+                renderStage(currentStageIndex + 1);
+            }
+        }
+
+        function goPrev() {
+            if (currentStageIndex > 0) {
+                renderStage(currentStageIndex - 1);
+            }
+        }
+        
+        function handleChoice(targetIndex) {
+            // Used by option buttons to navigate based on choice
+            renderStage(targetIndex, 'choice');
+        }
+
+        // --- MODAL/INITIALIZATION LOGIC ---
+
+        function updateAvatarDisplay() {
+            avatarDisplay.textContent = avatars[currentAvatarIndex];
+        }
+
+        function cycleAvatar(direction) {
+            currentAvatarIndex = (currentAvatarIndex + direction + avatars.length) % avatars.length;
+            updateAvatarDisplay();
+        }
+
+        function saveUserDetails() {
+            let inputName = nameInput.value.trim();
+            advisorName = inputName || "Advisor"; // Store the name globally
+            
+            selectedAvatar = avatars[currentAvatarIndex]; // Store the avatar globally
+            headerIcon.textContent = selectedAvatar;
+
+            modal.classList.add('hidden');
+            mainContent.classList.remove('hidden');
+
+            // START THE CALL FLOW
+            renderStage(0); 
+        }
+        
+        // Show the modal and initialize avatar on page load
+        window.onload = () => {
+            currentAvatarIndex = Math.floor(Math.random() * avatars.length); 
+            updateAvatarDisplay();
+            modal.classList.remove('hidden');
+        };
+    </script>
+</body>
+</html>
