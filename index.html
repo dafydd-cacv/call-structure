@@ -677,7 +677,10 @@
                 shortTitle: "T's details",
                 advisorScript: () => "What's the name of the company your issue is with?",
                 tips: "Ensuring that we accurately take a trader's details is vital for our information gathering purposes - if Trading Standards don't know who clients are complaining about, how are they supposed to do anything?",
-                objections: "None",
+                objections: {
+                    query: "But I don't want them to know I'm complaining!",
+                    response: "We're not going to get in touch with the trader, and neither will Trading Standards without first seeking your permission."
+                }
                 type: 'sequential',
                 visualAid: 'traderdetails.png',
                 clickAction: "Search for an existing trader record in Casebook. If you can't find one, click 'Add a new trader' and add the details."
