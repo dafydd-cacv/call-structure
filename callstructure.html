@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Call Structure - Full Flow</title>
+    <!-- Load Open Sans from Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom CSS to enforce Open Sans and brand colors */
+        :root {
+            --primary-blue: #004B88;
+            --accent-yellow: #FCBB69;
+            --light-bg: #F8FF8; 
+            --text-dark: #004B88; 
+            --green-correct: #4CAF50;
+            --red-incorrect: #F44336;
+            --light-blue-tint: #EAEDF5;
+            --hover-yellow: rgba(252, 187, 105, 0.5); 
+            
+            /* OBJECTION COLORS */
+            --objection-border: #880808; 
+            --objection-fill: #FEEBE7; 
+        }
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background-color: var(--light-blue-tint);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header styling */
+        .game-header {
+            background-color: var(--primary-blue);
+            color: white;
+            padding: 0.75rem 2rem; 
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-title-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center; 
+            gap: 1.5rem; 
+        }
+        
+        .header-text-container {
+            flex-grow: 1; 
+        }
+
+        .game-header h1 {
+            font-family: 'Open Sans', sans-serif;
+            font-weight: 700; 
+            font-size: 1.875rem; 
+            text-align: left;
+        }
+        
+        .game-header p {
+            font-weight: 400; 
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-top: 0.25rem;
+        }
+
+        .phone-icon {
+            font-size: 5rem; 
+            flex-shrink: 0; 
+        }
+        
+        .footer-logo {
+            width: 150px;
+            height: auto;
+        }
+
+        /* Modal specific styling (for user setup) */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000; 
+        }
+        
+        .modal-content {
+            background-color: white; 
+            position: relative; 
+            z-index: 1001; 
+            isolation: isolate; 
+            
+            border: 4px solid var(--primary-blue);
+            padding: 2rem;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            max-width: 450px;
+            width: 90%;
+        }
+        
+        .avatar-display-large {
+            font-size: 6rem; 
+            padding: 0.5rem 1rem;
+        }
+        
+        .avatar-nav-btn {
+            font-size: 2rem;
+            cursor: pointer;
+            color: var(--primary-blue);
+            padding: 0 0.5rem;
+            user-select: none;
+            transition: color 0.1s;
+        }
+        .avatar-nav-btn:hover {
+            color: var(--accent-yellow);
+        }
+
+        /* Input styling */
+        .input-group input {
+            border: 2px solid var(--primary-blue);
+            padding: 0.75rem;
+            font-weight: 600;
+            width: 100%;
+            border-radius: 0; 
+            outline: none;
+            transition: border-color 0.1s;
+        }
+        .input-group input:focus {
+            border-color: var(--primary-blue); 
+            box-shadow: 0 0 0 2px var(--accent-yellow); 
+        }
+
+        /* Button Styling */
+        .nav-button {
+            padding: 0.75rem 1.5rem;
+            font-weight: 700;
+            color: white;
+            background-color: var(--primary-blue);
+            transition: background-color 0.1s;
+        }
+        .nav-button:hover:not(:disabled) {
+            background-color: #2E639A; 
+        }
+
+        /* Specific content component styling */
+        .stage-title {
+            color: var(--accent-yellow);
+            background-color: var(--primary-blue);
+            padding: 0.5rem 1rem;
+            font-weight: 700;
+        }
+        
+        /* --- SCRIPT/OBJECTION BUBBLE STYLING --- */
+        /* These styles are used for the main content blocks */
+
+        /* Styles for Tips/Objections Boxes (from original modal) */
+        /* REMOVED .info-box, .info-box h3, .info-icon, and .objections-inactive styles */
+
+
+        /* NEW STYLES FOR LINKS IN TIPS SECTION */
+        .tip-link-highlight {
+            font-weight: 600;
+            color: var(--text-dark);
+            text-decoration: none; 
+            background-color: white;
+            padding: 0 0.25rem;
+            display: inline-block; 
+            transition: background-color 0.1s;
+            border-bottom: 0; 
+        }
+        .tip-link-highlight:hover {
+            background-color: var(--hover-yellow); 
+            border-bottom: 0; 
+        }
+        
+        /* --- OBJECTION ANIMATION --- */
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+
+        .shake-on-hover:hover .client-avatar-shake {
+            animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both infinite;
+            transform: translate3d(0, 0, 0);
+            backface-visibility: hidden;
+            perspective: 1000px;
+        }
+
+        /* --- MODAL OBJECTION STYLING (Used for main content) --- */
+        .modal-objection-query {
+            border: 2px solid var(--objection-border);
+            background-color: var(--objection-fill); /* Initial light red background */
+            transition: background-color 0.3s ease;
+        }
+        .modal-objection-query.response-visible {
+            background-color: white; /* Switches to white when visible */
+        }
+        
+        /* Style for paragraphs in the modal script for separation */
+        .modal-script p {
+            margin-bottom: 0.5rem; 
+            line-height: 1.4;
+        }
+        .modal-script p:last-child {
+            margin-bottom: 0;
+        }
+        
+        /* --- MODAL SPEECH BUBBLE STYLING (Used for main content) --- */
+        .modal-speech-bubble-wrapper {
+            display: flex;
+            align-items: center; 
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+        .modal-speech-bubble-wrapper .advisor-icon {
+            font-size: 2rem; 
+            flex-shrink: 0; 
+        }
+        .modal-speech-bubble {
+            position: relative;
+            background: white;
+            border: 2px solid var(--primary-blue);
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.5rem;
+            flex-grow: 1;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            min-height: 45px; 
+        }
+        .modal-speech-bubble:before {
+            content: "";
+            position: absolute;
+            top: 50%; 
+            left: -12px; 
+            width: 0;
+            height: 0;
+            border-top: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+            border-right: 12px solid var(--primary-blue);
+            transform: translateY(-50%); 
+            z-index: 10;
+        }
+        .modal-speech-bubble:after {
+            content: "";
+            position: absolute;
+            top: 50%; 
+            left: -8px; 
+            width: 0;
+            height: 0;
+            border-top: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+            border-right: 12px solid white;
+            transform: translateY(-50%); 
+            z-index: 11;
+        }
+        
+        /* New styles for the Action Instruction */
+        .action-instruction {
+            margin-top: 1rem;
+            padding: 0.75rem 1rem;
+            background-color: white;
+            font-weight: 600;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            border: 1px dashed var(--primary-blue);
+        }
+        .action-instruction-icon {
+            font-size: 1.5rem; 
+            line-height: 1;
+            flex-shrink: 0;
+        }
+
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    
+    <!-- USER NAME AND AVATAR MODAL -->
+    <div id="user-setup-modal" class="modal-overlay"> <!-- Starts visible -->
+        <div class="modal-content">
+            <h2 class="text-2xl font-bold text-primary-blue mb-6 text-center">Hello! Who are you?</h2>
+            
+            <div class="flex flex-col space-y-6 mb-6 items-center"> 
+                
+                <!-- Avatar Selection -->
+                <div class="flex items-center">
+                    <span class="avatar-nav-btn" onclick="cycleAvatar(-1)">◀</span>
+                    <div id="avatar-display" class="avatar-display-large"></div>
+                    <span class="avatar-nav-btn" onclick="cycleAvatar(1)">▶</span>
+                </div>
+                
+                <!-- Name Input -->
+                <div class="input-group w-full flex flex-col justify-center">
+                    <input 
+                        type="text" 
+                        id="user-name-input" 
+                        placeholder="Your name" 
+                        value=""
+                    >
+                </div>
+            </div>
+
+            <button 
+                id="start-training-button"
+                onclick="saveUserDetails()"
+                class="w-full py-3 text-white font-bold transition duration-200 nav-button"
+            >
+                Start
+            </button>
+        </div>
+    </div>
+
+    <!-- FULL-SCREEN IMAGE MODAL -->
+    <div id="image-modal" class="modal-overlay hidden" onclick="closeImageModal()">
+        <div id="image-modal-content" class="p-4 max-w-5xl w-full">
+            <img id="modal-image" alt="Zoomed screenshot" class="w-full h-auto" style="display: none; max-height: 90vh; object-fit: contain;">
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT AREA (Hidden by default) -->
+    <main id="main-content" class="flex-grow max-w-5xl mx-auto w-full hidden"> 
+        
+        <!-- Branded Header Box -->
+        <div class="game-header mb-8">
+            <div class="header-title-row">
+                <div class="header-text-container">
+                    <h1 class="game-title">Call structure</h1>
+                    <p class="text-sm font-normal opacity-90">Best practice for structuring your calls</p>
+                </div>
+                <!-- Advisor Avatar (Static, no click) -->
+                <div id="header-icon-wrapper" class="relative group">
+                    <span id="header-icon" class="phone-icon" role="img" aria-label="Advisor avatar"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- FULL FLOW CONTENT AREA -->
+        <div id="full-flow-content" class="bg-white shadow-md border-t-4 border-b-4 border-primary-blue p-6 md:p-8 space-y-8">
+            <!-- Content will be injected by JavaScript -->
+            <p>Loading...</p>
+        </div>
+    </main>
+    
+    <!-- Footer Section with Branding -->
+    <footer class="mt-12 pt-4 border-t border-gray-300 flex flex-col md:flex-row items-center justify-between text-sm text-gray-600 max-w-5xl mx-auto w-full">
+        <div class="mb-4 md:mb-0">
+            <img src="https://cacv.org.uk/wp-content/uploads/cacv-logo.svg" alt="Citizens Advice Cardiff & Vale Logo" class="footer-logo">
+        </div>
+        <p class="text-center md:text-right font-semibold">
+            This tool was designed by 
+            <a href="mailto:dafydd.young@consumer.advice.org.uk" class="text-blue-700 hover:text-blue-900 transition font-extrabold">Dafydd</a>
+            at 
+            <a href="https://cacv.org.uk" target="_blank" class="text-primary-blue hover:underline transition" style="color: var(--primary-blue);">Citizens Advice Cardiff & Vale</a>.
+        </p>
+    </footer>
+
+    <script>
+        // --- GLOBAL STATE ---
+        let advisorName = "Advisor"; 
+        let selectedAvatar = '👩🏻‍💻'; // Default value before user selection
+        
+        const avatars = ['👩🏻‍💻', '👨🏻‍💻', '👨🏽‍💻', '👩🏽‍💻', '👨🏿‍💻', '👩🏿‍💻'];
+        let currentAvatarIndex = 0; 
+        
+        // --- DOM REFERENCES ---
+        const userSetupModal = document.getElementById('user-setup-modal');
+        const mainContent = document.getElementById('main-content');
+        const avatarDisplay = document.getElementById('avatar-display');
+        const nameInput = document.getElementById('user-name-input');
+        const headerIcon = document.getElementById('header-icon'); 
+        const fullFlowContainer = document.getElementById('full-flow-content');
+        const imageModal = document.getElementById('image-modal');
+        const modalImage = document.getElementById('modal-image');
+        const clientAvatar = '🤷🏻‍♂️'; // Fixed client avatar
+        
+
+        // --- CALL FLOW DATA ---
+        // (Copied directly from original file)
+        const commonAddressObjection = {
+            query: "Why do you need to know where I live?",
+            response: "We log cases on behalf of, and pass information to, Trading Standards services across the country. Each different local authority has different protocols, so knowing where you live is essential to make sure that we offer the right advice, and, where applicable, the right support from Trading Standards."
+        };
+
+        const callFlowData = [
+            {
+                id: 'intro',
+                title: "Introduce yourself and the service",
+                shortTitle: "Intro",
+                advisorScript: (name, greeting) => 
+                    `${greeting}, you're speaking to ${name} at the Citizens Advice consumer service.<br>`,
+                tips: "Make a good first impression. Enunciate your name, the name of the service, and sound engaged and ready to help.",
+                objections: {
+                    query: "I thought that I was speaking to Trading Standards!",
+                    response: "Trading Standards aren't a public-facing organisation. All of the information that you give me today will be shared with them, and we'll give you the advice that you need to try and resolve your complaint yourself."
+                }, 
+                type: 'sequential',
+                visualAid: '',
+                clickAction: null 
+            },
+            {
+                id: 'check-repeat',
+                title: "Check if it's a repeat call",
+                shortTitle: "Check repeat",
+                advisorScript: () => "Is this the first time that you've called us about your query?<br>",
+                tips: "Hopefully, a repeat caller with have their reference number with them.", 
+                objections: "None", 
+                type: 'choice',
+                options: [
+                    { label: "Repeat caller", targetIndex: 2 },
+                    { label: "New caller", targetIndex: 2 }
+                ]
+            },
+            {
+                id: 'check-scope',
+                title: "Check if it's in scope",
+                shortTitle: "Check scope",
+                advisorScript: () => "Are you calling us about goods you've purchased or a service that you've paid for?<br>",
+                tips: 'Finding out early in a call whether we can advise the client helps to avoid taking lots of information unnecesarilly and improves the client journey. If they\'re calling about something out of scope, check the <a href="https://docs.google.com/spreadsheets/d/1Ghs2JKcALm6wzgV0UvMi1zRY38pYIdVcM8Qb6sPUGtU/edit?gid=2113296188#gid=2113296188" target="_blank" class="tip-link-highlight">signposting list</a>',
+                objections: "None", 
+                type: 'sequential',
+                visualAid: '',
+                clickAction: null
+            },
+            {
+                id: 'set-expectations',
+                title: "Set expectations",
+                shortTitle: "Expectations",
+                advisorScript: () => "What I'm going to do first is take some basic information about you.<br>Then I'll ask a few questions about the reason for the call.<br>Once I've got enough information to be able to advise you, I'll let you know what your rights are, what options you have, and how you can try and get what you're entitled to.<br>I might have to interrupt you at points to make sure that I've got the information that I need, and if you need me to repeat anything or explain something in further detail just ask me.<br>",
+                tips: "Letting the client know at the start of the call that you're going to interrupt them when you need to should let you assert yourself and control the call better later on. It also establishes that you're in charge, but by letting them know that you're happy to repeat and clarify advice still gives the client some element of control.",
+                objections: "None", 
+                type: 'sequential',
+                visualAid: '',
+                clickAction: null
+            },
+            {
+                id: 'client-name',
+                title: "Take the client's name",
+                shortTitle: "Name",
+                advisorScript: () => "Firstly, what's your name?",
+                tips: "Remember to ask the caller to spell their name if there are any doubts!",
+                objections: {
+                    query: "Why do you need to know my name?",
+                    response: "We set up a case file to log your complaint. You can do this anonymously if you'd prefer to, but it means that if you need to call back for further advice we won't have your case notes."
+                },
+                type: 'sequential',
+                visualAid: 'clientdetails.png', // Screenshot for name/details
+                clickAction: null
+            },
+            {
+                id: 'client-postcode',
+                title: "Take the client's postcode",
+                shortTitle: "Postcode",
+                advisorScript: () => "Secondly, what's your postcode?",
+                tips: 'Enter the postcode in Casebook and click "Find address". This will bring up a list of all of the addresses at that postcode.',
+                objections: commonAddressObjection, 
+                type: 'sequential',
+                visualAid: 'clientdetails2.png', // Screenshot for postcode lookup
+                clickAction: "Click 'Find address' after entering the postcode into Casebook."
+            },
+            {
+                id: 'client-street',
+                title: "Confirm the client's street name",
+                shortTitle: "Street name",
+                advisorScript: () => "Is that [street name]?",
+                tips: "Double check the street name with the caller.",
+                objections: commonAddressObjection, 
+                type: 'sequential',
+                visualAid: 'clientdetails2.png',
+                clickAction: null
+            },
+            {
+                id: 'client-house',
+                title: "Take the client's house number or name",
+                shortTitle: "House number",
+                advisorScript: () => "What house number or name?",
+                tips: "Ask the caller to give you their house number or name.",
+                objections: commonAddressObjection, 
+                type: 'sequential',
+                visualAid: 'clientdetails2.png',
+                clickAction: null
+            },
+            {
+                id: 'client-phone',
+                title: "Take the client's phone number",
+                shortTitle: "Phone number",
+                advisorScript: () => 
+                    `Is the telephone number you're calling from today that ends [last three digits] the best one for us to note down, or would you prefer that we take another?<br>`,
+                tips: "Remember to ask the caller to confirm their phone number if there are any doubts! Never take the telephone number from Connect and save it to Casebook without checking with the client that it's the right one.",
+                objections: {
+                    query: "Why do you want my phone number?",
+                    response: "Where Trading Standards get in touch with consumers, they often do so by phone."
+                },
+                type: 'sequential',
+                visualAid: 'connecttelephonenumber.png', // Corrected screenshot reference
+                clickAction: null
+            },
+             {
+                id: 'client-email',
+                title: "Take the client's email address",
+                shortTitle: "Email address",
+                advisorScript: () => "What's your email address?",
+                tips: "Remember to ask the caller to confirm the spelling of their email address if there are any doubts!",
+                objections: {
+                    query: "Why do you want my email address?",
+                    response: "Where Trading Standards get in touch with consumers, they usually prefer to do so by email."
+                }
+                ,
+                type: 'sequential',
+                visualAid: 'clientdetails5.png',
+                clickAction: null
+            },
+            {
+                id: 'client-status',
+                title: "Is the caller a consumer or a trader?",
+                shortTitle: "C or T?",
+                advisorScript: () => "Are you calling as a private individual or on behalf of a business?",
+                tips: "Remember, a consumer is an individual acting for purposes that are wholly or mainly outside the individual’s trade, business, craft or profession.",
+                objections: "None",
+                type: 'sequential',
+                visualAid: 'clientdetails7.png',
+                clickAction: "Click on 'Use client postcode' to map their profile to their local Trading Standards service. If there's a relevant third party to the case, you can (with their permission) enter their details here. You should also ask the caller how they found out number and update that section on Casebook."
+            },
+            {
+                id: 'trader-name',
+                title: "Take the trader's details",
+                shortTitle: "T's details",
+                advisorScript: () => "What's the name of the company your issue is with?",
+                tips: "Ensuring that we accurately take a trader's details is vital for our information gathering purposes - if Trading Standards don't know who clients are complaining about, how are they supposed to do anything?",
+                objections: {
+                    query: "But I don't want them to know I'm complaining!",
+                    response: "We're not going to get in touch with the trader, and neither will Trading Standards without first seeking your permission."
+                },
+                type: 'sequential',
+                visualAid: 'traderdetails.png',
+                clickAction: "Search for an existing trader record in Casebook. If you can't find one, click 'Add a new trader' and add the details."
+            },
+            {
+                id: 'goods-service',
+                title: "Find out what goods or service the client is calling about",
+                shortTitle: "Goods/Service",
+                advisorScript: () => "What is it that you've purchased or paid for, and very briefly, what went wrong?",
+                tips: "There are lots of different options in the 'Goods / services' dropdown and 'Complaint' dropdown. Make sure that you choose the most relevant options to ensure that our data quality remains consistently high.<br><br>Only allow the client to give you a brief overview of what went wrong - you can explore this in more detail later if you need to.",
+                objections: "None",
+                type: 'sequential',
+                visualAid: '',
+                clickAction: null
+            },
+            {
+                id: 'contract',
+                title: "Gather details about the contract",
+                shortTitle: "Contract",
+                advisorScript: () => "How did you pay?<br>How did you agree the contract, for example, was it in store, online, or some other way?<br>When did you form theG contract?<br>How much did you agree to pay?",
+                tips: 'The caller might get confused if you refer to "the contract" - adapt your language accordingly. For example, you might prefer to say "When did you buy they item?" instead of "When did you form the contract?". Take the full amount of the contract, even if the full amount hasn\'t been paid - make sure to add in your notes if this is the case.',
+                objections: {
+                    query: "Why do I need to give you all these details?",
+                    response: "Your rights depend on lots of things - not just what's wrong with the item, but also how you paid for it, where you agreed the contract, and other factors. We need to get these details to make sure that the advice we give you is correct."
+                },
+                type: 'sequential',
+                visualAid: 'paymentmethodsetc.png',
+                clickAction: null
+            },
+            {
+                id: 'pci',
+                title: "Did the client get the correct pre-contractual information?",
+                shortTitle: "PCI",
+                advisorScript: () => "Were you given terms and conditions that said that you had 14 days to cancel your contract?",
+                tips: 'You only need to ask about PCI if the contract was formed at a distance or off-premises. If you\'re unsure how to classify the contract, you can use <a href="https://drive.google.com/file/d/0B-OrLWOGSqU9d3FXZkY2X2VFYlE/view?usp=sharing&resourcekey=0-xQCQr4eM3HYHdG9MFIWmIA" target="_blank" class="tip-link-highlight">Figure D1 in your manuals</a> or the <a href="https://dafydd-cacv.github.io/contract-identifier/" target="_blank" class="tip-link-highlight">Contract identifier tool</a>',
+                objections: "None",
+                type: 'sequential',
+                visualAid: 'pci.png',
+                clickAction: 'If the client wasn\'t given PCI and should have been, make sure that you click "Criminal breach" as case type, and also ensure that you refer the case to Trading Standards.'
+            },
+            {
+                id: 'outcome',
+                title: "Find out the client's preferred outcome",
+                shortTitle: "Preferred outcome",
+                advisorScript: () => "What's the ideal outcome as far as you're concerned?",
+                tips: "Finding out what a client's preferred outcome is helps you decide what advice is most appropriate if there are multiple options available. Remember that a client's preferred outcome might be completely impossible or, even if they're entitled to it, difficult to achieve.",
+                objections: "None",
+                type: 'sequential',
+                visualAid: '',
+                clickAction: null
+            },
+            {
+                id: 'advise',
+                title: "Give your advice",
+                shortTitle: "Advise",
+                advisorScript: () => "Based on what you've told me...",
+                tips: 'Clarify anything that you need to. Give full bespoke advice based on the information that the client has given you. You can use the <a href="https://docs.google.com/spreadsheets/d/1Ghs2JKcALm6wzgV0UvMi1zRY38pYIdVcM8Qb6sPUGtU/edit?gid=2146868549#gid=2146868549" target="_blank" class="tip-link-highlight">advice templates</a> if you need to.',
+                objections: "None",
+                type: 'sequential',
+                visualAid: '',
+                clickAction: null
+            },
+            {
+                id: 'close',
+                title: "Close the call",
+                shortTitle: "Close",
+                advisorScript: () => "Thank you very much for calling us today. Your reference number is XXXXXXX. If you need any further help, call us back on 0808 223 1133 and quote your reference number.",
+                tips: "This is your last chance to check that the client has understood you, and vice versa! Make sure that if there's any commitment to contact from Trading Standards that you let the client know this.",
+                objections: "None",
+                type: 'sequential',
+                visualAid: '',
+                clickAction: null
+            }
+        ];
+        
+        // --- HELPER FUNCTIONS ---
+
+        function getTimeOfDayGreeting() {
+            const hour = new Date().getHours();
+            if (hour < 12) {
+                return "Good morning";
+            } else {
+                return "Good afternoon";
+            }
+        }
+        
+        // --- IMAGE MODAL FUNCTIONS ---
+
+        function openImageModal(imageSrc) {
+            modalImage.src = imageSrc;
+            modalImage.style.display = 'block'; // Make image visible when modal opens
+            imageModal.style.display = 'flex';
+        }
+
+        function closeImageModal() {
+            imageModal.style.display = 'none';
+            modalImage.style.display = 'none'; // Hide image when modal closes
+        }
+        
+        /**
+         * Toggles the visibility of the objection response in the Full Flow modal,
+         * and updates the background color of the query container.
+         * @param {string} elementId - The ID of the response container to toggle (e.g., 'objection-response-0').
+         */
+        function toggleObjectionResponse(elementId) {
+            const responseElement = document.getElementById(elementId);
+            const queryElement = responseElement ? responseElement.closest('.modal-objection-query') : null;
+
+            if (responseElement) {
+                const isHidden = responseElement.classList.toggle('hidden');
+                
+                if (queryElement) {
+                    // Toggles the background class
+                    queryElement.classList.toggle('response-visible', !isHidden);
+                }
+            }
+        }
+
+        // --- NEW MAIN RENDER FUNCTION ---
+        /**
+         * Compiles and renders the entire call flow into the main content area.
+         */
+        function renderFullFlow() {
+            let html = '';
+            const greeting = getTimeOfDayGreeting(); 
+            const totalStages = callFlowData.length;
+
+            callFlowData.forEach((stage, index) => {
+                const stageNumber = index + 1;
+                
+                // --- Advisor Script ---
+                const advisorTextRaw = typeof stage.advisorScript === 'function' 
+                    ? stage.advisorScript(advisorName, greeting)
+                    : stage.advisorScript;
+                
+                const advisorTextParagraphs = advisorTextRaw.split('<br>').map(p => `<p class="text-base font-semibold" style="color: var(--text-dark);">${p.trim()}</p>`).join('');
+                const advisorScriptHTML = `
+                    <div class="modal-speech-bubble-wrapper">
+                        <span class="advisor-icon" role="img" aria-label="Advisor avatar">${selectedAvatar}</span>
+                        <div class="modal-speech-bubble">
+                            <div class="modal-script">${advisorTextParagraphs}</div>
+                        </div>
+                    </div>
+                `;
+
+                // --- Objection Content ---
+                let objectionHTML = '';
+                if (stage.objections && stage.objections !== "None") {
+                    const query = stage.objections.query;
+                    const response = stage.objections.response;
+                    const objectionId = `objection-response-${index}`;
+                    
+                    objectionHTML = `
+                        <div class="modal-objection-query p-3 mt-3 rounded-md cursor-pointer shake-on-hover" onclick="toggleObjectionResponse('${objectionId}')">
+                            <div class="flex items-start gap-3">
+                                <span class="text-xl leading-none pt-1 client-avatar-shake" style="color: var(--objection-border);">${clientAvatar}</span>
+                                <p class="italic text-sm pt-1 font-semibold" style="color: var(--objection-border);">${query}</p>
+                            </div>
+                            
+                            <div id="${objectionId}" class="hidden">
+                                <div class="flex items-start gap-3 mt-3 border-t border-objection-border pt-3">
+                                    <span class="text-xl leading-none pt-1" style="color: var(--primary-blue);">${selectedAvatar}</span>
+                                    <p class="text-sm pt-1" style="color: var(--primary-blue);">${response}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // --- Tips Content ---
+                const tipContent = stage.tips ? stage.tips.trim() : "";
+                const isTipsInactive = tipContent === "" || tipContent.toLowerCase() === "none";
+                
+                let tipsSectionHTML = ''; // New variable for the tips block
+
+                if (!isTipsInactive) {
+                    // Split tips by <br> to handle multi-line tips correctly
+                    const tipsParagraphs = tipContent.split('<br>').map(p => 
+                        `<p class="text-sm">${p.trim()}</p>`
+                    ).join('');
+
+                    tipsSectionHTML = `
+                        <div class="flex items-start gap-3 mt-4 p-3 rounded-md" style="background-color: var(--light-blue-tint);">
+                            <span class="text-xl leading-none pt-1" style="color: var(--primary-blue);">💡</span>
+                            <div class="pt-1" style="color: var(--text-dark);">
+                                ${tipsParagraphs}
+                            </div>
+                        </div>
+                    `;
+                }
+
+
+                // --- Visual Aid Logic (REMOVED from output) ---
+                // --- Click Action Logic (REMOVED from output) ---
+                
+                // --- Main Stage Container (Simplified) ---
+                html += `
+                    <div id="script-stage-${index}" class="p-4 border-2 border-primary-blue rounded-lg">
+                        
+                        <!-- Title bar -->
+                        <div class="text-xl font-bold mb-4 text-white stage-title rounded-sm">
+                            <span>${stageNumber}. ${stage.title}</span>
+                        </div>
+
+                        <div class="flex flex-col md:flex-row">
+                            <!-- Column: Script, Objections -->
+                            <div class="flex-grow w-full">
+                                <!-- Advisor Script -->
+                                ${advisorScriptHTML}
+
+                                <!-- Objections -->
+                                ${objectionHTML}
+
+                                <!-- Key Tips (Re-worked) -->
+                                ${tipsSectionHTML}
+
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            fullFlowContainer.innerHTML = html;
+        }
+
+        // --- MODAL/INITIALIZATION LOGIC ---
+        function updateAvatarDisplay() {
+            avatarDisplay.textContent = avatars[currentAvatarIndex];
+        }
+
+        function cycleAvatar(direction) {
+            currentAvatarIndex = (currentAvatarIndex + direction + avatars.length) % avatars.length;
+            updateAvatarDisplay();
+        }
+
+        function saveUserDetails() {
+            let inputName = nameInput.value.trim();
+            advisorName = inputName || "Advisor"; // Store the name globally
+            
+            selectedAvatar = avatars[currentAvatarIndex]; // Store the avatar globally
+            headerIcon.textContent = selectedAvatar;
+            
+            // Hide modal and show main content
+            userSetupModal.classList.add('hidden');
+            mainContent.classList.remove('hidden');
+
+            // START THE FULL FLOW RENDER
+            renderFullFlow(); 
+        }
+
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // 1. Initial Avatar Setup for Modal
+            currentAvatarIndex = Math.floor(Math.random() * avatars.length); 
+            
+            // Set initial avatar in the header and modal display before showing anything
+            selectedAvatar = avatars[currentAvatarIndex];
+            headerIcon.textContent = selectedAvatar; 
+            if (avatarDisplay) {
+                avatarDisplay.textContent = selectedAvatar;
+            }
+            
+            // 2. Show the Modal (it starts visible by default)
+            
+            // NOTE: Main content remains hidden until the user clicks 'Start'
+        });
+    </script>
+</body>
+</html>
